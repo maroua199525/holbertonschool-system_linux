@@ -9,32 +9,30 @@ void race_state(int *id, size_t size)
 {
 	static int cars[SIZE];
 	static size_t k;
-	int result = 0;
+	bool result = false;
 	static int laps[SIZE];
 	size_t i = 0, j = 0;
 
 	if (!size)
 		return;
-	while (i < size)
+	for (i = 0; i < size; i++)
 	{
-		while (j < k)
+		for (j = 0; j < k; j++)
 		{
 			if (id[i] == cars[j])
 			{
-				result = 1;
+				result = true;
 				laps[j] += 1;
 				break;
 			}
-			j++;
 		}
-		if (result == 0)
+		if (result == false)
 		{
 			cars[k] = id[i];
 			sort_cars(cars, laps, k);
 			k++;
 			printf("Car %d joined the race\n", id[i]);
 		}
-		i++;
 	}
 	printf("Race state:\n");
 	for (j = 0; j < k; j++)

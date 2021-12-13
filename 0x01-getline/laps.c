@@ -27,7 +27,7 @@ void race_state(int *id, size_t size)
 			}
 			j++;
 		}
-		if (result == false)
+		if (result == 0)
 		{
 			cars[k] = id[i];
 			sort_cars(cars, laps, k);

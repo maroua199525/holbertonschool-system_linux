@@ -14,16 +14,15 @@ void race_state(int *id, size_t size)
 	size_t i = 0, j = 0;
 
 	if (size == 0)
-		free(id);
+		return;
 	while (i < size)
 	{
-
 		while (j < k)
 		{
-			if (cars[j] == id[i])
+			if (id[i] == cars[j])
 			{
 				result = true;
-				laps[j] = laps[j] + 1;
+				laps[j] += 1;
 				break;
 			}
 			j++;
@@ -53,19 +52,19 @@ void race_state(int *id, size_t size)
  */
 void sort_cars(int *cars, int *laps, int n)
 {
-	int tmp;
+	int aux;
 	int i = n;
 
 	while (i > 0)
 	{
 		if (cars[i] < cars[i - 1])
 		{
-			tmp = cars[i - 1];
+			aux = cars[i - 1];
 			cars[i - 1] = cars[i];
-			cars[i] = tmp;
-			tmp = laps[i - 1];
+			cars[i] = aux;
+			aux = laps[i - 1];
 			laps[i - 1] = laps[i];
-			laps[i] = tmp;
+			laps[i] = aux;
 		}
 		i--;
 	}

@@ -13,6 +13,6 @@
 
 void swap_number(int x, int y);
 void race_state(int *id, size_t size);
-void sort_cars(int *cars, int *laps, int k);
+void sort_cars(int *cars, int *laps, int n);
 
 #endif

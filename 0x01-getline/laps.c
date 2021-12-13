@@ -10,15 +10,15 @@ void race_state(int *id, size_t size)
 	static int cars[SIZE];
 	static size_t k;
 	bool result = false;
-    static int laps[SIZE];
+	static int laps[SIZE];
 	size_t i = 0, j = 0;
 
 	if (size == 0)
 		free(id);
-	while(i < size)
+	while (i < size)
 	{
 
-		while(j < k)
+		while (j < k)
 		{
 			if (cars[j] == id[i])
 			{
@@ -26,7 +26,7 @@ void race_state(int *id, size_t size)
 				laps[j] = laps[j] + 1;
 				break;
 			}
-            j++;
+			j++;
 		}
 		if (result == false)
 		{
@@ -35,7 +35,7 @@ void race_state(int *id, size_t size)
 			k++;
 			printf("Car %d joined the race\n", id[i]);
 		}
-        i++;
+		i++;
 	}
 	printf("Race state:\n");
 	for (j = 0; j < k; j++)
@@ -45,37 +45,28 @@ void race_state(int *id, size_t size)
 }
 
 /**
- * swap_number -swao two integer
- * @x: integer
- * @y: integer
- * Return: Void
- */
-void swap_number(int x, int y)
-{
-    int tmp;
-    tmp = x;
-    x = y;
-    y = tmp;
-}
-
-/**
  * sort_cars - sort cars.
  * @cars: array of cars
  * @laps: array of laps
  * @n: number of cars
  * Return: Void
  */
-void sort_cars(int *cars, int *laps, int k)
+void sort_cars(int *cars, int *laps, int n)
 {
-	//int tmp;
-	int x;
+	int tmp;
+	int i = n;
 
-	for (x = k; x > 0; x--)
+	while (i > 0)
 	{
-		if (cars[x] < cars[x - 1])
+		if (cars[i] < cars[i - 1])
 		{
-			swap_number(cars[x], cars[x - 1]);
-			swap_number(laps[x], laps[x - 1]);
+			tmp = cars[i - 1];
+			cars[i - 1] = cars[i];
+			cars[i] = tmp;
+			tmp = laps[i - 1];
+			laps[i - 1] = laps[i];
+			laps[i] = tmp;
 		}
+		i--;
 	}
 }

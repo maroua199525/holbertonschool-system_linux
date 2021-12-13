@@ -3,7 +3,7 @@
  * race_state - race
  * @id: cars
  * @size: number of cars
- * Return: always 0.
+ * Return: void
  */
 void race_state(int *id, size_t size)
 {
@@ -13,7 +13,7 @@ void race_state(int *id, size_t size)
 	static int laps[SIZE];
 	size_t i = 0, j = 0;
 
-	if (size == 0)
+	if (!size)
 		return;
 	while (i < size)
 	{

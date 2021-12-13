@@ -9,7 +9,7 @@ void race_state(int *id, size_t size)
 {
 	static int cars[SIZE];
 	static size_t k;
-	bool result = false;
+	int result = 0;
 	static int laps[SIZE];
 	size_t i = 0, j = 0;
 
@@ -21,7 +21,7 @@ void race_state(int *id, size_t size)
 		{
 			if (id[i] == cars[j])
 			{
-				result = true;
+				result = 1;
 				laps[j] += 1;
 				break;
 			}

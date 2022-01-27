@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 /**
- * main - displays the information contained in the ELF file header of an ELF file
+ * main - displays the information contained in the ELF of an ELF file
  * @argc: the length of argc
  * @argv: argements
  * @env:  the environment

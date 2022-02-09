@@ -4,7 +4,7 @@ global asm_putc               ; export to the gcc link
 
 asm_putc:
 	push rbp                    ; push the base
-	mov rbp, rsp                
+	mov rbp, rsp
 
 	push rdi
 	push rsi

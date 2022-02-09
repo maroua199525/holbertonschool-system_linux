@@ -1,25 +1,25 @@
 BITS 64
 
-global asm_memcpy           ; export to the gcc link+
+global asm_memcpy				; export to the gcc link
 
-section .text
 asm_memcpy:
-	push 	rbp
-	mov		rbp,	rsp
-	xor		rcx,	rcx		; Create a counter and init to zero
+	push rbp					; push the base
+	mov rbp, rsp				; start new base
 
-loop:
-	cmp		byte[rsi + rcx], 0 		; Compare arg2[i] == 0
-	je		return_value	   		; If true so go return_value
-	cmp		rdx,	rcx	   			; Compare i == arg3
-	je 		return_value
-	mov		r8b,	[rsi + rcx] 	; cpy arg2[i] in tmp register
-	mov		[rdi + rcx],	r8b 	; cpy tmp register to arg1[i]
-	inc		rcx		    			; i++
-	jmp	loop		    			; go loop again
+	mov R9, 0h					; set counter to 0
+asm_loop:
 
-return_value:
-	mov		rsp,	rbp		; Get back the status stack
-	pop		rbp				; Delete the element to the stack
+	cmp R9, rdx
+	je asm_end
 
-	ret 					; return (ptr)
+	mov bl, [rsi + R9]
+	mov [rdi + R9], bl
+
+
+
+	inc R9						; counter += 1
+	jmp asm_loop				; repeat
+asm_end:
+	mov rsp, rbp				; return to old base
+	pop rbp 					; pop to the call base
+	ret

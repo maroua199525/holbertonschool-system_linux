@@ -3,7 +3,7 @@
 /**
  * main -  sends the signal SIGINT to a process, given its PID
  * @argc: argument counter.
- * @argv: pointer 
+ * @argv: pointer
  * Return: EXIT_SUCCESS or EXIT_FAILURE
  **/
 

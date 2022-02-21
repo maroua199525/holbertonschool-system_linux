@@ -1,7 +1,5 @@
 #include "signals.h"
 
-#define USAGE "Usage: %s <signum>\n"
-
 /**
  * main - prints a description of a given signal
  * @argc: argument count

@@ -11,7 +11,8 @@ void sig_handler(int signal)
 }
 
 /**
- * main - sets a handler for the signal SIGINT, and exits right after the signal is received and handled
+ * main - sets a handler for the signal SIGINT,
+ * and exits right after the signal is received and handled
  *
  * Return: EXIT_SUCCESS, or EXIT_FAILURE
  */

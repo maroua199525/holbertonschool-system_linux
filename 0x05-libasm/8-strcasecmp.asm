@@ -1,68 +1,84 @@
 BITS 64
 
-global asm_strcasecmp			; export to the gcc link
-
+global asm_strcasecmp
+; rdi = string1
+; rsi = string2
 
 asm_strcasecmp:
-	push rbp					; push the base
-	mov rbp, rsp				; start new base
-
-	mov R8, 0h					; set return to 0
-	mov R9, 0h					; set counter to 0
-
-asm_loop:
-	mov al, [rdi + R9]			; store the char of first argument + counter in al
-	mov bl, [rsi + R9]			; store the char of second argument + counter in ab
-
-	cmp al, 65
-	jl nop_cap
-	cmp al, 90
-	jg nop_cap
-
-	add al, 32
-
+    push rbx
+    push rcx
+    push rdx
+    xor rcx, rcx
+    xor rax, rax
+    xor rdx, rdx
+    xor rbx, rbx
 compare:
-	cmp al, bl					; compare the char + counter of first and second argument
-	je equal_char				; if equal jump to equal_char
+    mov bl, [rdi + rcx]
+    mov dl, [rsi + rcx]
 
-	movzx R8, al
-	movzx rcx, bl
-	sub R8, rcx
+save_difference:
+    mov al, bl
+    sub al, dl
+    movsx rax, al
 
-	test R8, R8
-	jnz asm_end
-	test rcx, rcx
-	jz asm_end
+    cmp bl, byte 0
+    jz first_ends
+    cmp dl, byte 0
+    jz second_ends
+    cmp bl, dl
+    jl less
+    jg greater
+goto_next:
+    inc rcx
+    jmp compare
 
-	jmp asm_end
+greater:
+    cmp bl, 'a'
+    jl return_greater
+    cmp bl, 'z'
+    jg return_greater
+    sub bl, 32
+    jmp second_try
 
-nop_cap:
-	cmp bl, 65
-	jl compare
-	cmp bl, 90
-	jg compare
-	add bl, 32
-	jmp compare
+less:
+    cmp dl, 'a'
+    jl return_less
+    cmp dl, 'z'
+    jg return_less
+    sub dl, 32
+    jmp second_try
 
-equal_char:
-	cmp al, 0h					; compare al to Null
-	mov R8, 0					; set return to 0 if true
-	je asm_end					; jmp to asm_end
+second_try:
+    cmp bl, dl
+    jl return_greater
+    jg return_less
+    jmp goto_next
 
-	inc R9						; increace counter
-	jmp asm_loop				; loop again
+first_ends:
+    cmp dl, byte 0
+    jz return_matched
+    jmp return_less
 
-asm_end:
-	cmp R8, 32
-	je new_end
-	mov rax, R8					; pass the counter to the return register
-	mov rsp, rbp				; return to old base
-	pop rbp						; pop to the call base
-	ret
+second_ends:
+    jmp return_greater
 
-new_end:
-	mov R8, 0h
-	mov rax, R8					; pass the counter to the return register
-	mov rsp, rbp				; return to old base
-	pop rbp						; pop to the call base
-	ret
+return_matched:
+    xor rax, rax
+    jmp quit
+
+return_greater:
+    ; sub bl, dl
+    ; movzx rax, bl
+    jmp quit
+
+return_less:
+    ; sub dl, bl
+    ; neg dl
+    ; movsx rax, dl
+    jmp quit
+
+quit:
+    pop rdx
+    pop rcx
+    pop rbx
+    ret

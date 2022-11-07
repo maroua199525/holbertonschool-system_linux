@@ -30,21 +30,20 @@ save_difference:
     jg greater
 goto_next:
     inc rcx
-    inc rdx
     jmp compare
 
 greater:
-    cmp bl, 'a'
+    cmp bl, 65
     jl return_greater
-    cmp bl, 'z'
+    cmp bl, 90
     jg return_greater
     sub bl, 32
     jmp second_try
 
 less:
-    cmp dl, 'a'
+    cmp dl, 65
     jl return_less
-    cmp dl, 'z'
+    cmp dl, 90
     jg return_less
     sub dl, 32
     jmp second_try
@@ -83,4 +82,3 @@ quit:
     pop rcx
     pop rbx
     ret
-    

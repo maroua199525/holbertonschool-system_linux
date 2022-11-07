@@ -14,7 +14,7 @@ asm_strcasecmp:
     xor rbx, rbx
 compare:
     mov bl, [rdi + rcx]
-    mov dl, [rsi + rdx]
+    mov dl, [rsi + rcx]
 
 save_difference:
     mov al, bl

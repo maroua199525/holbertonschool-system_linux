@@ -33,19 +33,19 @@ goto_next:
     jmp compare
 
 greater:
-    cmp bl, 65
+    cmp bl, 'a'
     jl return_greater
-    cmp bl, 90
+    cmp bl, 'z'
     jg return_greater
-    sub bl, 32
+    add bl, 32
     jmp second_try
 
 less:
-    cmp dl, 65
+    cmp dl, 'a'
     jl return_less
-    cmp dl, 90
+    cmp dl, 'z'
     jg return_less
-    sub dl, 32
+    add dl, 32
     jmp second_try
 
 second_try:

@@ -30,6 +30,7 @@ save_difference:
     jg greater
 goto_next:
     inc rcx
+    dec rdx
     jmp compare
 
 greater:

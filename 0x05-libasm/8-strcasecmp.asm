@@ -14,7 +14,7 @@ asm_strcasecmp:
     xor rbx, rbx
 compare:
     mov bl, [rdi + rcx]
-    mov dl, [rsi + rcx]
+    mov dl, [rsi + rdx]
 
 save_difference:
     mov al, bl
@@ -30,6 +30,7 @@ save_difference:
     jg greater
 goto_next:
     inc rcx
+    inc rdx
     jmp compare
 
 greater:
@@ -82,3 +83,4 @@ quit:
     pop rcx
     pop rbx
     ret
+    

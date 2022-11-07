@@ -37,7 +37,7 @@ greater:
     jl return_greater
     cmp bl, 'z'
     jg return_greater
-    add bl, 32
+    sub bl, 32
     jmp second_try
 
 less:
@@ -45,7 +45,7 @@ less:
     jl return_less
     cmp dl, 'z'
     jg return_less
-    add dl, 32
+    sub dl, 32
     jmp second_try
 
 second_try:

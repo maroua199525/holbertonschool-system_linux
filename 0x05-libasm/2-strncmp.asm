@@ -2,55 +2,44 @@ BITS 64
 
 global asm_strncmp
 
-asm_strncmp:
-	push rbp
-	mov rbp, rsp
-	mov QWORD [rbp - 40], rdx
-	mov QWORD [rbp - 32], rsi
-	mov QWORD [rbp - 24], rdi
-	mov DWORD [rbp - 16], 0
-	mov QWORD [rbp - 8], 0
-	jmp s1_s2_n_null
-walk_str:
-	mov rax, QWORD [rbp - 24]
-	movzx eax, BYTE [rax]
-	movsx edx, al
-	mov rax, QWORD [rbp - 32]
-	movzx eax, BYTE [rax]
-	movsx eax, al
-	sub edx, eax
-	mov eax, edx
-	mov DWORD [rbp - 16], eax
-	add QWORD [rbp - 24], 1
-	add QWORD [rbp - 32], 1
-	add QWORD [rbp - 8], 1
-s1_s2_n_null:
-	mov rax, QWORD [rbp - 24]
-	movzx eax, BYTE [rax]
-	test al, al
-	jne n_eq_test
-	mov rax, QWORD [rbp - 32]
-	movzx eax, BYTE [rax]
-	test al, al
-	je eq_test_may
-n_eq_test:
-	cmp DWORD [rbp - 16], 0
-	jne eq_test_may
-	mov rax, QWORD [rbp - 8]
-	cmp rax, QWORD [rbp - 40]
-	jb walk_str
-eq_test_may:
-	cmp DWORD [rbp - 16], 0
-	jle eq_test_min
-	mov eax, 1
-	jmp end_1
-eq_test_min:
-	cmp DWORD [rbp - 16], 0
-	jns end_0
-	mov eax, -1
-	jmp end_1
-end_0:
-	mov eax, 0
-end_1:
-	pop rbp
-	ret
+section .text
+   asm_strncmp:
+         push rbp
+         mov rbp, rsp
+         xor rcx, rcx
+         xor rax, rax
+   loop_in_bytes_of_sour_and_dest:
+            cmp rdx, 0
+            je return
+            cmp rcx, rdx
+            je compar
+            mov al, [rdi + rcx]
+            mov bl, [rsi + rcx]
+            cmp al, 0
+            je compar
+            cmp bl, 0
+            je compar
+            cmp al , bl
+            jne compar
+            inc rcx
+            jmp loop_in_bytes_of_sour_and_dest
+   compar:
+      cmp al , bl
+      je equal
+      jg greater
+      jl less
+   equal:
+      mov rax , 0x0
+      jmp return
+   greater:
+      mov rax , 0x1
+      jmp return
+   less:
+      sub bl, al
+      mov al , bl
+      mov rax , -0x1
+      jmp return
+   return:
+      mov rsp , rbp
+      pop rbp
+      ret

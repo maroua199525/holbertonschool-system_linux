@@ -27,24 +27,32 @@ void die_with_error(const char *str)
 int start_server(void)
 {
 	struct sockaddr_in server;
+	int sd;
 
-	signal(SIGINT, response_signal);
-	server_fd = socket(PF_INET, SOCK_STREAM, 0);
-	if (server_fd == -1)
-		return (fprintf(stderr, "socket error\n"), EXIT_FAILURE);
+	setbuf(stdout, NULL);
+	sd = socket(PF_INET, SOCK_STREAM, 0);
+	if (sd < 0)
+	{
+		perror("socket failed");
+		return (EXIT_FAILURE);
+	}
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT);
 	server.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(server_fd, (struct sockaddr *)&server, sizeof(server)) == -1)
-		return (die_with_error("bind error"), EXIT_FAILURE);
-	if (listen(server_fd, SOMAXCONN) == -1)
-		return (die_with_error("listen error"), EXIT_FAILURE);
-	printf("Server listening on port %d\n", PORT);
-	while (1)
+	if (bind(sd, (struct sockaddr *)&server, sizeof(server)) < 0)
 	{
-		accept_message(server_fd);
+		perror("bind failure");
+		return (EXIT_FAILURE);
 	}
-	return (EXIT_SUCCESS);
+	if (listen(sd, SOMAXCONN) < 0)
+	{
+		perror("listen failure");
+		return (EXIT_FAILURE);
+	}
+	printf("Server listening on port %d\n", ntohs(server.sin_port));
+	while (1)
+		accept_message(sd);
+	close(sd);
 }
 
 /**

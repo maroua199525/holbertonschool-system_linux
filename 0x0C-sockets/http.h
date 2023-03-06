@@ -53,7 +53,7 @@ typedef struct Todo
 } todo_t;
 
 /* server.c */
-int start_server(void);
+int start_server(int task);
 int accept_messages(int sd);
 int send_response(int client_sd, char *response);
 int parse_request(int client_sd, char *buf);

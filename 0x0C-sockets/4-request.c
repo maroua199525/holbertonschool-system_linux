@@ -8,7 +8,7 @@
  */
 int main(int ac, char **av)
 {
-	return (start_server());
+	return (start_server(4));
 	(void)ac;
 	(void)av;
 }

@@ -1,43 +1,50 @@
-#include "http.h"
-
-int accept_messages(int sd);
-void parse_header(char *buf);
+#include "socket.h"
 
 /**
- * main - entry point
- * @ac: argument vector
- * @av: argument count
- * Return: SUCCESS or FAILURE
+ * main - Opens an IPv4/TCP socket, and listens to traffic on port 8080.
+ * - Accept an entering connection
+ * - Print the IP address of the connected client
+ * - Wait for an incoming message from the connected client
+ * - Print the full received HTTP request
+ * - Print the break-down of the first line of the received HTTP request
+ * - Send back a response to the connected client (HTTP 200 OK)
+ * - Close the connection with the client
+ * - Wait for the next connection
+ *
+ * Return: Return: EXIT_SUCCESS if successful otherwise EXIT_FAILURE
  */
-int main(int ac, char **av)
+int main(void)
 {
-	return (start_server());
-	(void)ac;
-	(void)av;
+	return (start_server(5));
 }
 
 /**
- * parse_request - parses HTTP header and prints fields
- * @client_sd: the client socket descriptor
- * @buf: string buffer containing message text
- * Return: 0 on success else 1
+ * response - Print and send HTTP response
+ * @buf: buffer to split and print
+ *
+ * Return: Always EXIT_SUCCESS
  */
-int parse_request(int client_sd, char *buf)
+int response(char *buf)
 {
-	char *DELIMS = " \t\r\n";
-	char *path, *query, *save1, *key, *value, *save2;
+	char *allpath, *path, *queries;
+	char *delim1 = " \r\t\n";
+	char *delim2 = "&?";
 
-	strtok(buf, DELIMS);
-	path = strtok(NULL, DELIMS);
-	path = strtok_r(path, "?", &save1);
+	strtok(buf, delim1);
+	allpath = strtok(NULL, delim1);
+	path = strtok(allpath, delim2);
 	printf("Path: %s\n", path);
-	query = strtok_r(NULL, "&", &save1);
-	while (query)
+	while ((queries = strtok(NULL, delim2)))
 	{
-		key = strtok_r(query, "=", &save2);
-		value = strtok_r(NULL, "=", &save2);
-		printf("Query: \"%s\" -> \"%s\"\n", key, value);
-		query = strtok_r(NULL, "&", &save1);
+		printf("Query: \"");
+		for (; *queries != '='; queries++)
+			putchar(*queries);
+		printf("\" -> \"");
+		queries++;
+		for (; *queries; queries++)
+			putchar(*queries);
+		putchar(0x22);
+		putchar(0xA);
 	}
-	return (send_response(client_sd, RESPONSE_200));
+	return (http_response(200, NULL));
 }

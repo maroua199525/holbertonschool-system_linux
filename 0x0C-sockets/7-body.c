@@ -1,64 +1,52 @@
-#include "http.h"
+#include "socket.h"
 
 /**
- * main - socket server
- * @ac: argument vector
- * @av: argument count
- * Return: SUCCESS or FAILURE
+ * main - Opens an IPv4/TCP socket, and listens to traffic on port 8080.
+ * - Accept an entering connection
+ * - Print the IP address of the connected client
+ * - Wait for an incoming message from the connected client
+ * - Print the full received HTTP request
+ * - Print the break-down of the first line of the received HTTP request
+ * - Send back a response to the connected client (HTTP 200 OK)
+ * - Close the connection with the client
+ * - Wait for the next connection
+ *
+ * Return: Return: EXIT_SUCCESS if successful otherwise EXIT_FAILURE
  */
-int main(int ac, char **av)
+int main(void)
 {
-	return (start_server());
-	(void)ac;
-	(void)av;
+	return (start_server(7));
 }
 
 /**
- * parse_request - parses HTTP request
- * @client_sd: the client socket descriptor
- * @buf: string buffer containing message text
- * Return: 0 on success else 1
+ * response - Print and send HTTP response
+ * @buf: buffer to split and print
+ *
+ * Return: Always EXIT_SUCCESS
  */
-int parse_request(int client_sd, char *buf)
+int response(char *buf)
 {
-	char *start_line, *path, *header, *body, *query, *key, *value, *save_ptr1,
-		*save_ptr2;
-	short url_encoded = 0;
+	char *delim1 = " \r\t\n";
+	char *delim2 = "& ";
+	char *all_body, *body;
+	int i = 10;
 
-	body = strstr(buf, CRLF CRLF);
-	if (strlen(body))
+	strtok(buf, delim1);
+	printf("Path: %s\n", strtok(NULL, delim1));
+	for (i = 12; i; i--)
+		all_body = strtok(NULL, delim1);
+	while ((body = strtok(all_body, delim2)))
 	{
-		*body = 0;
-		body += strlen(CRLF CRLF);
+		all_body = NULL;
+		printf("Body param: \"");
+		for (; *body != '='; body++)
+			putchar(*body);
+		printf("\" -> \"");
+		body++;
+		for (; *body; body++)
+			putchar(*body);
+		putchar(0x22);
+		putchar(0xA);
 	}
-	start_line = strtok_r(buf, CRLF, &save_ptr1);
-	strtok(start_line, SP);
-	path = strtok(NULL, SP);
-	path = strtok(path, "?");
-	printf("Path: %s\n", path);
-	header = strtok_r(NULL, CRLF, &save_ptr1);
-	while (header)
-	{
-		key = trim(strtok_r(header, ":", &save_ptr2));
-		value = trim(strtok_r(NULL, CRLF, &save_ptr2));
-		if (!strcasecmp(key, CONTENT_TYPE))
-		{
-			if (!strcasecmp(value, URL_ENCODED))
-				url_encoded = 1;
-		}
-		header = strtok_r(NULL, CRLF, &save_ptr1);
-	}
-	if (url_encoded)
-	{
-		query = strtok_r(body, "&", &save_ptr1);
-		while (query)
-		{
-			key = strtok_r(query, "=", &save_ptr2);
-			value = strtok_r(NULL, "=", &save_ptr2);
-			printf("Body param: \"%s\" -> \"%s\"\n", key, value);
-			query = strtok_r(NULL, "&", &save_ptr1);
-		}
-	}
-	send_response(client_sd, RESPONSE_200);
-	return (0);
+	return (http_response(200, NULL));
 }

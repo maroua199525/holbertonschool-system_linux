@@ -1,32 +1,39 @@
-#include "http.h"
+#include "socket.h"
 
 /**
- * main - entry point
- * @ac: argument vector
- * @av: argument count
- * Return: SUCCESS or FAILURE
- */
-int main(int ac, char **av)
+ * main - Opens an IPv4/TCP socket, and listens to traffic on port 8080
+ * - Accept an entering connection
+ * - Print the IP address of the connected client
+ * - Wait for an incoming message from the connected client
+ * - Print the full received HTTP request
+ * - Print the break-down of the first line of the received HTTP request
+ * - Send back a response to the connected client (HTTP 200 OK)
+ * - Close the connection with the client
+ * - Wait for the next connection
+ *
+ * Return: EXIT_SUCCESS if successful otherwise EXIT_FAILURE
+*/
+int main(void)
 {
 	return (start_server(4));
-	(void)ac;
-	(void)av;
 }
 
 /**
- * parse_request - parses HTTP header and prints fields
- * @client_sd: the client socket descriptor
- * @buf: string buffer containing message text
- * Return: 0 on success else 1
+ * response - Print and send HTTP response
+ * @buf: buffer to split and print
+ *
+ * Return: EXIT_SUCCESS if successful otherwise EXIT_FAILURE
  */
-int parse_request(int client_sd, char *buf)
+int response(char *buf)
 {
-	char *DELIMS = " \t\r\n";
 	char *method, *path, *version;
+	char *delim = " \r\t\n";
 
-	method = strtok(buf, DELIMS);
-	path = strtok(NULL, DELIMS);
-	version = strtok(NULL, DELIMS);
-	printf("Method: %s\nPath: %s\nVersion: %s\n", method, path, version);
-	return (send_response(client_sd, RESPONSE_200));
+	method = strtok(buf, delim);
+	path = strtok(NULL, delim);
+	version = strtok(NULL, delim);
+	printf("Method: %s\n", method);
+	printf("Path: %s\n", path);
+	printf("Version: %s\n", version);
+	return (http_response(200, NULL));
 }

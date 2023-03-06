@@ -1,82 +1,111 @@
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/socket.h>
 #include <unistd.h>
-
-#define PORT 12345
-#define BUF_SIZE 8192
-
-int accept_messages(int sd);
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
 
 /**
- * main - socket server
- * @ac: argument vector
- * @av: argument count
- * Return: SUCCESS or FAILURE
+ * die_with_error - Print message to stderr and exit
+ * @str:    String to print
+ * @sockid: Socket descriptor to close
+ *
+ * Returns: Nothing
  */
-int main(int ac, char **av)
+void die_with_error(const char *str, const int sockid)
 {
-	struct sockaddr_in server;
-	int sd;
-
-	sd = socket(PF_INET, SOCK_STREAM, 0);
-	if (sd < 0)
-	{
-		perror("socket failed");
-		return (EXIT_FAILURE);
-	}
-	server.sin_family = AF_INET;
-	server.sin_port = htons(PORT);
-	server.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(sd, (struct sockaddr *)&server, sizeof(server)) < 0)
-	{
-		perror("bind failure");
-		return (EXIT_FAILURE);
-	}
-	if (listen(sd, 10) < 0)
-	{
-		perror("listen failure");
-		return (EXIT_FAILURE);
-	}
-	printf("Server listening on port %d\n", ntohs(server.sin_port));
-	accept_messages(sd);
-	close(sd);
-	return (EXIT_SUCCESS);
-	(void)ac;
-	(void)av;
+	fprintf(stderr, "%s\n", str);
+	if (close(sockid) == -1)
+		fprintf(stderr, "close error\n");
+	exit(EXIT_FAILURE);
 }
 
 /**
- * accept_messages - accepts messages from server socket
- * @sd: the server socket
- * Return: SUCCESS or FAILURE
+ * create_socket - Create a socket
+ *
+ * Return: A new socket
  */
-int accept_messages(int sd)
+int create_socket(void)
 {
-	int client_sd;
-	struct sockaddr_in client;
-	socklen_t client_size = sizeof(client);
-	char buf[BUF_SIZE + 1];
-	ssize_t bytes_read;
+	int sockid;
 
-
-	client_sd = accept(sd, (struct sockaddr *)&client, &client_size);
-	if (client_sd < 0)
+	sockid = socket(PF_INET, SOCK_STREAM, 0);
+	if (sockid == -1)
 	{
-		perror("accept failure");
-		return (EXIT_FAILURE);
+		fprintf(stderr, "socket error\n");
+		return (-1);
 	}
-	inet_ntop(AF_INET, &client.sin_addr, buf, INET_ADDRSTRLEN);
-	printf("Client connected: %s\n", buf);
+	return (sockid);
+}
 
-	bytes_read = recv(client_sd, buf, BUF_SIZE, 0);
-	if (bytes_read > 0)
-	{
-		buf[bytes_read] = 0;
-		printf("Message received: \"%s\"\n", buf);
-	}
+/**
+ * assgin_address_to_socket - Associates and reserves a port for use
+ * by the Socket
+ * @sockid: Socket descriptor
+ * @port:   The port number to connect
+ *
+ * Return: A pointer to address port
+ */
+struct sockaddr_in assgin_address_to_socket(const int sockid, const int port)
+{
+	struct sockaddr_in server;
 
-	close(client_sd);
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (bind(sockid, (struct sockaddr *)&server, sizeof(server)) == -1)
+		die_with_error("bind error", sockid);
+	return (server);
+}
+
+/**
+ * accept_message - Accept a message from the server
+ * @sockid: Socket descriptor
+ *
+ * Return: Nothing
+ */
+void accept_message(const int sockid)
+{
+	char *client_ip, buf[BUFSIZ];
+	int rd, fd;
+	struct sockaddr_in ClientAddress;
+	socklen_t adddrLen = sizeof(ClientAddress);
+
+	fd = accept(sockid, (struct sockaddr *)&ClientAddress, &adddrLen);
+	if (fd == -1)
+		die_with_error("accept error", sockid);
+	if (getpeername(sockid, (struct sockaddr *)&ClientAddress, &adddrLen) != -1)
+		die_with_error("getpeername error", sockid);
+	client_ip = inet_ntoa(ClientAddress.sin_addr);
+	if (client_ip == NULL)
+		die_with_error("inet_ntoa error", sockid);
+	printf("Client connected: %s\n", client_ip);
+	rd = recv(fd, buf, BUFSIZ, 0);
+	if (rd == -1)
+		die_with_error("recv error", sockid);
+	printf("Message received: \"%s\"\n", buf);
+}
+
+/**
+ * main - Opens an IPv4/TCP socket, and listens to traffic on port 12345.
+ *
+ * Return: EXIT_SUCCESS on success, EXIT_FAILURE on failure
+ */
+int main(void)
+{
+	int sockid;
+	int port = 12345;
+
+	sockid = create_socket();
+	if (sockid == -1)
+		exit(EXIT_FAILURE);
+	assgin_address_to_socket(sockid, port);
+	printf("Server listening on port %d\n", port);
+	if (listen(sockid, 1) == -1)
+		die_with_error("listen error", sockid);
+	accept_message(sockid);
+	if (close(sockid) == -1)
+		fprintf(stderr, "close error\n");
 	return (EXIT_SUCCESS);
 }

@@ -1,47 +1,74 @@
 #include <arpa/inet.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <netdb.h>
-
-#define USAGE "Usage: %s <host> <port>\n"
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 /**
- * main - socket client
- * @ac: argument vector
- * @av: argument count
- * Return: SUCCESS or FAILURE
+ * die_with_error - Print message to stderr and exit
+ * @str:    String to print
+ * @sockid: Socket descriptor to close
+ *
+ * Returns: Nothing
  */
-int main(int ac, char **av)
+void die_with_error(char *str, int sockid)
 {
-	struct sockaddr_in server;
-	int sd;
+	fprintf(stderr, "%s\n", str);
+	if (close(sockid) == -1)
+		fprintf(stderr, "close error\n");
+	exit(EXIT_FAILURE);
+}
+
+/**
+ * create_socket - Create a socket
+ *
+ * Return: A new socket
+ */
+int create_socket(void)
+{
+	int sockid;
+
+	sockid = socket(PF_INET, SOCK_STREAM, 0);
+	if (sockid == -1)
+	{
+		fprintf(stderr, "socket error\n");
+		return (-1);
+	}
+	return (sockid);
+}
+
+/**
+ * main - Connects to a listening server
+ * @argc: Number of arguments
+ * @argv: Command line arguments
+ *
+ * Return: EXIST_SUCCESS on success, EXIST_FAIL on failure
+ */
+int main(int argc, char **argv)
+{
+	struct sockaddr_in servAddr;
+	int sockid, status;
 	struct hostent *host;
 
-	if (ac != 3)
-		return (printf(USAGE, av[0]), EXIT_FAILURE);
-
-	host = gethostbyname(av[1]);
-	sd = socket(PF_INET, SOCK_STREAM, 0);
-	if (sd < 0)
+	if (argc != 3)
 	{
-		perror("socket failed");
+		printf("Usage: %s <host> <port>\n", argv[0]);
 		return (EXIT_FAILURE);
 	}
-	server.sin_family = AF_INET;
+	sockid = create_socket();
+	if (sockid == -1)
+		return (EXIT_FAILURE);
+	servAddr.sin_family = AF_INET;
+	host = gethostbyname(argv[1]);
 	inet_pton(AF_INET, inet_ntoa(*(struct in_addr *)host->h_addr),
-		&server.sin_addr);
-	server.sin_port = htons(atoi(av[2]));
-	if (connect(sd, (struct sockaddr *)&server, sizeof(server)) < 0)
-	{
-		perror("connect failure");
-		return (EXIT_FAILURE);
-	}
-
-	printf("Connected to %s:%s\n", av[1], av[2]);
-	close(sd);
+		&servAddr.sin_addr);
+	servAddr.sin_port = htons(atoi(argv[2]));
+	status = connect(sockid, (struct sockaddr *)&servAddr, sizeof(servAddr));
+	if (status == -1)
+		die_with_error("connect error", sockid);
+	printf("Connected to %s:%s\n", argv[1], argv[2]);
+	close(sockid);
 	return (EXIT_SUCCESS);
-	(void)ac;
-	(void)av;
 }

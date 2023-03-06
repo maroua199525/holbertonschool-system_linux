@@ -40,8 +40,10 @@ int start_server(void)
 	if (listen(server_fd, SOMAXCONN) == -1)
 		return (die_with_error("listen error"), EXIT_FAILURE);
 	printf("Server listening on port %d\n", PORT);
-	while (accept_message(server_fd) == EXIT_SUCCESS)
-	{}
+	while (1)
+	{
+		accept_message(server_fd);
+	}
 	return (EXIT_SUCCESS);
 }
 

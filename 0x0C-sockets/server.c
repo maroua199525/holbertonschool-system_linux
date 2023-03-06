@@ -24,7 +24,7 @@ void die_with_error(const char *str)
  *
  * Return: EXIT_SUCCESS if successful otherwise EXIT_FAILURE
  */
-int start_server(int task)
+int start_server(void)
 {
 	struct sockaddr_in server;
 
@@ -40,7 +40,7 @@ int start_server(int task)
 	if (listen(server_fd, SOMAXCONN) == -1)
 		return (die_with_error("listen error"), EXIT_FAILURE);
 	printf("Server listening on port %d\n", PORT);
-	while (accept_message(task) == EXIT_SUCCESS)
+	while (accept_message(server_fd) == EXIT_SUCCESS)
 	{}
 	return (EXIT_SUCCESS);
 }

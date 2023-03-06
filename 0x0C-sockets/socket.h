@@ -15,7 +15,7 @@
 #define MAX_SIZE 1024
 
 /* ----- server.c -----*/
-int start_server(int task);
+int start_server(void);
 int accept_message(int task);
 void die_with_error(const char *str);
 void response_signal(int x);

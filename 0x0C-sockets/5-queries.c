@@ -15,7 +15,7 @@
  */
 int main(void)
 {
-	return (start_server(5));
+	return (start_server());
 }
 
 /**

@@ -115,42 +115,7 @@ int accept_message(int task)
  */
 int http_response(int status_code, char *body)
 {
-	char *cl = "Content-Length: ";
-	char *ct = "Content-Type: application/json";
-	int len = 10 + strlen(cl) + strlen(ct), len2 = 0;
-	char *response = NULL;
-	char *buf = NULL, flag = 1;
+	send(status_code, body, strlen(body), 0);
+	return (0);
 
-	response = get_response(status_code);
-	if (body)
-	{
-		len2 = (strlen(response) + MAX_SIZE + len + 4);
-		buf = calloc(len2, sizeof(char));
-		if (buf == NULL)
-			flag = 0;
-		sprintf(buf, "HTTP/1.1 %d %s" CRLF "Content-Length: %lu"
-		CRLF "Content-Type: application/json" CRLF CRLF "%s",
-		status_code, response, strlen(body), body);
-	}
-	else
-	{
-		len2 = (strlen(response) + 18);
-		buf = calloc(len2, sizeof(char));
-		if (buf == NULL)
-			flag = 0;
-		sprintf(buf, "HTTP/1.1 %d %s" CRLF CRLF, status_code, response);
-	}
-	if (flag == 1)
-	{
-		send(client_fd, buf, strlen(buf), 0);
-		free(buf);
-	}
-	else
-		send(client_fd, "HTTP/1.1 500 Internal Server Error" CRLF CRLF, 43, 0);
-	if (body)
-		free(body);
-	if (client_fd != 0 && close(client_fd) == -1)
-		return (fprintf(stderr, "close client error\n"), EXIT_FAILURE);
-	client_fd = 0;
-	return (EXIT_SUCCESS);
 }

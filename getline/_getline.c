@@ -1,151 +1,202 @@
-#include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
 #include "_getline.h"
 
-
 /**
- * _getline - Reads a line from a file descriptor and returns it as a string.
- * @fd: The file descriptor from which to read the line.
- * Return: On success, it returns a pointer to the line as a string.
- * If fd is -1, it frees the resources and returns NULL.
- * If the end-of-file is reached or an error occurs, it returns NULL.
- */
+* _getline - reads an entire line from a file descriptor
+* @fd: file descriptor to read from
+*
+* Return: null-terminated string without newline, else NULL
+*/
 char *_getline(const int fd)
 {
-	static line_head *lines;
-	line_head *current_node;
-	char *read_data_buffer;
-	int bytes_read;
+	static fd_t *holder_head;
+	fd_t *current, *temp;
 
 	if (fd == -1)
 	{
-		free_lines(lines);
-		return (NULL);
-	}
-
-	for (current_node = lines; current_node != NULL;
-		current_node = current_node->next)
-	{
-		if (current_node->fd == fd)
+		current = holder_head;
+		while (current != NULL)
 		{
-			if (current_node->bytes <= 0)
-				current_node->bytes = read(fd, current_node->buffer, READ_SIZE);
-			return (read_line_chars(current_node));
+			temp = current;
+			current = current->next;
+			if (temp->buffer != NULL)
+				free(temp->buffer);
+			free(temp);
 		}
-	}
-
-	read_data_buffer = malloc(sizeof(char) * READ_SIZE);
-	bytes_read = read(fd, read_data_buffer, READ_SIZE);
-	if (bytes_read <= 0)
-	{
-		free(read_data_buffer);
+		holder_head = NULL;
 		return (NULL);
 	}
 
-	current_node = add_line_node(&lines, fd, read_data_buffer, bytes_read);
-	if (!current_node)
-	{
-		free(read_data_buffer);
+	current = fd_insert(&holder_head, fd);
+	if (current == NULL)
 		return (NULL);
-	}
 
-	return (read_line_chars(current_node));
+	return (extract_line(current));
 }
 
 /**
- * free_lines - Frees the memory allocated for the linked list of line nodes.
- * @lines: The head of the linked list of line nodes.
- */
-void free_lines(line_head *lines)
+* fd_insert - inserts a new fd_holder into the linked list
+* @head: double pointer to list head
+* @fd: file descriptor that describes the node to create
+*
+* Return: pointer to new node, or existing node that matches fd. else NULL
+*/
+fd_t *fd_insert(fd_t **head, int fd)
 {
-	/* int i = 0;*/
-	line_head *current_node = lines;
-	line_head *next_node;
+	fd_t *out, *current = *head, *prev = NULL;
 
-	while (current_node != NULL)
+	if (*head == NULL)
 	{
-		next_node = current_node->next;
-		free(current_node->buffer);
-		free(current_node);
-		current_node = next_node;
-	}
-}
-
-/**
- * add_line_node - Adds new node to the linked list for a new file descriptor.
- * @lines: A pointer to the head pointer of the linked list.
- * @fd: The file descriptor associated with the new node.
- * @buffer: The buffer containing the read data for the file descriptor.
- * @bytes: The number of bytes read into the buffer.
- * Return: On success, it returns a pointer to the newly added node.
- * If memory allocation fails, it returns NULL.
- */
-line_head *add_line_node(line_head **lines, const int fd, char *buffer,
-						int bytes)
-{
-	line_head *new_node = malloc(sizeof(line_head));
-		if (!new_node)
+		out = malloc(sizeof(fd_t));
+		if (out == NULL)
 			return (NULL);
-
-	new_node->fd = fd;
-	new_node->bytes = bytes;
-	new_node->buffer = buffer;
-	new_node->next = *lines;
-	*lines = new_node;
-
-	return (new_node);
-}
-
-/**
- * read_line_chars - Extracts a complete line from the current node's buffer.
- * @current_node: The node containing the buffer to read from.
- * Return: On success, it returns a pointer to the line as a string.
- * If memory allocation fails, it returns NULL.
- */
-char *read_line_chars(line_head *current_node)
-{
-char *line = NULL, *tmp = NULL;
-int size = 0, bytes_c = 0, i, j;
-
-while (current_node->bytes > 0)
-{
-	if (size < bytes_c + current_node->bytes + 1)
-	{
-		size += current_node->bytes + 1;
-		tmp = malloc(sizeof(char) * size);
-
-		if (!tmp)
-			{
-			free(line);
-			return (NULL);
-			}
-		memcpy(tmp, line, bytes_c);
-		memset(tmp + bytes_c, '\0', size - bytes_c);
-		free(line);
-		line = tmp;
+		out->buffer = NULL;
+		out->fd = fd;
+		out->next = NULL;
+		*head = out;
+		return (out);
 	}
-	for (i = 0; i < current_node->bytes; i++)
+	while (current != NULL)
 	{
-		if (current_node->buffer[i] == '\n')
+		if (current->fd == fd)
+			return (current);
+		if (current->fd > fd)
 		{
-			current_node->buffer[i++] = '\0';
-			current_node->bytes -= i;
-			memcpy(line + bytes_c, current_node->buffer, i);
-			for (j = 0; i + j < READ_SIZE; j++)
-				current_node->buffer[j] = current_node->buffer[i + j];
-			for (; j < READ_SIZE; j++)
-				current_node->buffer[j] = '\0';
-
-			return (line);
+			out = malloc(sizeof(fd_t));
+			if (out == NULL)
+				return (NULL);
+			out->buffer = NULL;
+			out->fd = fd;
+			out->next = current;
+			if (prev != NULL)
+				prev->next = out;
+			return (out);
 		}
+		prev = current;
+		current = current->next;
 	}
-	memcpy(line + bytes_c, current_node->buffer, current_node->bytes);
-	bytes_c += current_node->bytes;
-	current_node->bytes = read(current_node->fd, current_node->buffer, READ_SIZE);
+	out = malloc(sizeof(fd_t));
+	if (out == NULL)
+		return (NULL);
+	out->buffer = NULL;
+	out->fd = fd;
+	out->next = NULL;
+	prev->next = out;
+	return (out);
 }
-return (line);
+
+/**
+* extract_line - gets the next line from a fd_holder
+* @holder: struct holding all necessary info
+*
+* Return: pointer to new string, else NULL
+*/
+char *extract_line(fd_t *holder)
+{
+	int start;
+	char *out = NULL;
+
+	if (holder->buffer == NULL)
+	{
+		holder->idx = 0;
+		holder->buffer = malloc(sizeof(char) * (READ_SIZE + 1));
+		if (holder->buffer == NULL)
+			return (NULL);
+		memset(holder->buffer, 0, READ_SIZE + 1);
+		holder->len = read(holder->fd, holder->buffer, READ_SIZE);
+		if (holder->len == -1)
+			return (NULL);
+	}
+	if (holder->len == 0)
+	{
+		free(holder->buffer);
+		holder->buffer = NULL;
+		return (NULL);
+	}
+
+	start = holder->idx;
+	while (holder->idx < holder->len && holder->buffer[holder->idx] != '\n')
+		holder->idx++;
+
+	if (holder->idx == READ_SIZE)
+		return (end_of_buffer(holder, start));
+
+	if (start != holder->len || holder->idx != start)
+		out = _strndup(holder->buffer + start, holder->idx - start);
+	if (holder->buffer[holder->idx] == '\0')
+	{
+		free(holder->buffer);
+		holder->buffer = NULL;
+	}
+	if (holder->idx < holder->len)
+		holder->idx++;
+
+	return (out);
+}
+
+/**
+* end_of_buffer - this handles lines that need multiple reads
+* @holder: struct holding all necessary info
+* @start: left bound of string
+*
+* Return: full line string, else NULL
+*/
+char *end_of_buffer(fd_t *holder, int start)
+{
+	char *out = NULL, *temp = NULL;
+	int i = 0, j = 0;
+
+	if (start != holder->idx)
+		out = _strndup(holder->buffer + start, holder->idx - start);
+	else
+		out = NULL;
+	free(holder->buffer);
+	holder->buffer = NULL;
+	temp = extract_line(holder);
+	if (temp == NULL)
+	{
+		if (out != NULL)
+			free(out);
+		if (holder->buffer != NULL)
+			free(holder->buffer);
+		return (NULL);
+	}
+	if (out != NULL)
+	{
+		while (out[i])
+			i++;
+		while (temp[j])
+			j++;
+		out = realloc(out, 1 + i + j);
+		strcat(out, temp);
+		free(temp);
+	}
+	else
+		out = temp;
+	return (out);
+}
+
+/**
+* _strndup - duplicates n chars of a string
+* @src: source string to copy from
+* @n: number of chars to copy
+*
+* Return: pointer to new string, else NULL
+*/
+char *_strndup(char *src, int n)
+{
+	int i = 0;
+	char *out;
+
+	out = malloc(sizeof(char) * (n + 1));
+	if (out == NULL)
+		return (NULL);
+
+	while (i < n)
+	{
+		out[i] = src[i];
+		i++;
+	}
+
+	out[n] = '\0';
+	return (out);
 }

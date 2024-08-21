@@ -1,34 +1,37 @@
-#ifndef _GETLINE_H
-#define _GETLINE_H
+#ifndef _GETLINE_H_
+#define _GETLINE_H_
 
-#ifndef READ_SIZE
-#define READ_SIZE 1
-#endif
+#define READ_SIZE 1024
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 /**
- * struct line_head - struct of linked list to store our chunks
- * of lines being read
- * @fd: file descriptor read
- * @bytes: bytes read
- * @buffer: pointer to buffer characters
- * @next: pointer to next struct
- */
-
-typedef struct line_head
+* struct fd_holder - struct for handling file descriptors with _getline
+* @buffer: char buffer holding output from read()
+* @idx: current left index of next line
+* @fd: file descriptor to be used with read()
+* @len: return value of read
+* @next: pointer to next fd_holder in a linked list
+*
+* Description: all necessary info for _getline with multiple fds
+*/
+typedef struct fd_holder
 {
-int fd;
-int bytes;
-char *buffer;
-struct line_head *next;
-} line_head;
+	char *buffer;
+	int idx;
+	int fd;
+	int len;
+	struct fd_holder *next;
+} fd_t;
 
-
-/* Function for our homemade getline */
 char *_getline(const int fd);
-char *read_line_chars(line_head *current_node);
-void free_lines(line_head *lines);
-line_head *add_line_node(line_head **lines, const int fd, char *buffer,
-						int bytes);
-char *read_line_chars(line_head *current_node);
+char *extract_line(fd_t *);
+char *end_of_buffer(fd_t *, int);
+fd_t *fd_insert(fd_t **head, int fd);
+char *_strndup(char *, int);
 
-#endif /* _GETLINE_H */
+#endif /* _GETLINE_H_ */

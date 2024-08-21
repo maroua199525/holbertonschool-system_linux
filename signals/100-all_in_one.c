@@ -1,34 +1,33 @@
-#include <signal.h>
-#include <stddef.h>
 #include "signals.h"
 
 /**
-* signal_handler - handle signals
-* @signum: code
-* @si: pointer
-* @ucontext: context
-*/
-void signal_handler(int signum, siginfo_t *si, void *ucontext)
+ * sigaction_handler - act as handler for sigaction syscall
+ * @signum: an integer representing a signal
+ * @info: a pointer to a siginfo_t with info about the signal
+ * @ucontext: a void pointer to a user context (getcontext(3))
+ * Return: Always void
+ */
+void sigaction_handler(__attribute__((unused))int signum,
+siginfo_t *info, __attribute__((unused))void *ucontext)
 {
-	(void)signum;
-	(void)ucontext;
+	char *msg = "Caught";
 
-	psiginfo(si, "Caught");
+	psiginfo(info, msg);
+	fflush(stdout);
 }
 
 /**
-* all_in_one - all signals
-*/
+ * all_in_one - it sets up a single handler for all the signals
+ * Return: Always void
+ */
 void all_in_one(void)
 {
-	struct sigaction sigact;
-	int sig;
+	int i;
+	struct sigaction action;
 
-	sigact.sa_flags |= SA_SIGINFO;
-	sigact.sa_sigaction = signal_handler;
-	for (sig = 1; sig < SIGRTMIN; sig++)
-	{
-		if (sig != SIGKILL && sig != SIGSTOP)
-			sigaction(sig, &sigact, NULL);
-	}
+	action.sa_sigaction = sigaction_handler;
+	sigemptyset(&action.sa_mask);
+	action.sa_flags |= SA_SIGINFO;
+	for (i = 1; i < _NSIG; i++)
+		sigaction(i, &action, NULL);
 }

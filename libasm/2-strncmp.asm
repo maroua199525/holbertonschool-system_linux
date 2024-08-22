@@ -1,36 +1,42 @@
-bits 64
-
-	global asm_strncmp ; exporting the function
-
-	section .text
-	; int asm_strncmp(const char *s1, const char *s2, size_t n);
-	; the asm_strncmp function compares only the first at most n bytes of s1 and s2
+BITS 64
+	global	asm_strncmp
 
 asm_strncmp:
+	push	rbp
+	mov	rbp, rsp
+	push	rcx
 
 loop:
-	cmp rdx, 0 ; check if arg3 (n bytes) is 0
-	je equal ; n bytes 0 => end of counting
-	mov r8b, [rdi] ; load one char str1 in r8b
-	mov r9b, [rsi] ; load one char str2 in r9b
-	cmp r8b, r9b ; compare register and jumps accordingly if one "wins"
-	jl less
-	jg greater
-	cmp r8b, 0 ; check if end of string in register r8b
-	je equal ; if yes strings equal
-	inc rdi ; str1[i++]
-	inc rsi ; str2[i++]
-	dec rdx ; n--
-	jmp loop ; repeat the loop
-
-less:
-	mov eax, -1 ; result negative s1 is less than s2 til n
-	ret ; return the value
+	movzx 	eax, byte [rdi]
+	movzx 	ecx, byte [rsi]
+	cmp	al, 0x0
+	je	compare
+	cmp	al, cl
+	jne	compare
+	inc	rdi
+	inc	rsi
+	dec	edx
+	jz	success
+	jmp	loop
 
 greater:
-	mov eax, 1 ; result positive s1 greater than s2 til n
-	ret ; return the value
+	mov	rax, 0x1
+	jmp	end
 
-equal:
-	mov eax, 0 ; equality of strings up to n
-	ret ; return the value
+less:
+	mov	rax, -0x1
+	jmp	end
+
+compare:
+	cmp	al, cl
+	jg	greater
+	jl	less
+
+success:
+	mov	rax, 0x0
+
+end:
+	pop	rcx
+	mov	rsp, rbp
+	pop	rbp
+	ret

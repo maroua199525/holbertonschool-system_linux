@@ -73,6 +73,8 @@ void print_long_listing_format(FileArg file)
 {
 	if (S_ISDIR(file.st.st_mode))
 		printf("d");
+	else if (S_ISLNK(file.st.st_mode))
+		printf("l");
 	else
 		printf("-");
 

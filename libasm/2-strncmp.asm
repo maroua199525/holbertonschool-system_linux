@@ -1,36 +1,36 @@
 BITS 64
-section .text
 global asm_strncmp
 
 asm_strncmp:
-    push rbp                     ; Save base pointer
-    mov rbp, rsp                 ; Set base pointer
-    push rcx                     ; Save rcx (for later use)
+    push    rbp
+    mov     rbp, rsp
+    push    rcx
 
-    xor rax, rax                 ; Clear rax (this will hold the result)
-    xor rcx, rcx                 ; Clear rcx (counter for looping)
+start_loop:
+    movzx   eax, byte [rdi]    ; Load byte from first string (rdi) into eax
+    movzx   ecx, byte [rsi]    ; Load byte from second string (rsi) into ecx
+    cmp     al, cl             ; Compare characters
+    jne     handle_diff        ; If they are not the same, go to handle_diff
+    test    al, al             ; Check for null character (end of string)
+    je      equal              ; If null, strings are equal up to this point
+    inc     rdi                ; Move to next byte in rdi
+    inc     rsi                ; Move to next byte in rsi
+    dec     edx                ; Reduce comparison length (edx)
+    jnz     start_loop         ; Continue if length is not zero
 
-loop:
-    movzx bl, BYTE [rdi + rcx]    ; Load byte from first string into BL
-    movzx bh, BYTE [rsi + rcx]    ; Load byte from second string into BH
-    cmp bl, bh                    ; Compare the characters
-    jne diff                      ; If they differ, jump to 'diff'
-    test bl, bl                   ; Check if null terminator reached in first string
-    je out                        ; If null, strings are equal up to this point
-    inc rcx                       ; Increment counter
-    cmp rcx, rdx                  ; Check if we've compared rdx bytes
-    je out                        ; If yes, the strings are equal up to rdx bytes
-    jmp loop                      ; Repeat the loop
+    ; If we get here, strings are equal up to N characters
+    xor     eax, eax           ; Set eax to 0 (equal)
+    jmp     finish
 
-diff:
-    sub eax, ebx                  ; Calculate difference: eax = bl - bh
-    jmp end                       ; Return the difference
+handle_diff:
+    sub     eax, ecx           ; Calculate difference between bytes
+    jmp     finish
 
-out:
-    xor eax, eax                  ; Set eax to 0 (strings are equal)
+equal:
+    xor     eax, eax           ; Set eax to 0 (equal)
 
-end:
-    pop rcx                       ; Restore rcx
-    mov rsp, rbp                  ; Restore stack pointer
-    pop rbp                       ; Restore base pointer
-    ret                           ; Return
+finish:
+    pop     rcx
+    mov     rsp, rbp
+    pop     rbp
+    ret

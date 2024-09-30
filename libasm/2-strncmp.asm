@@ -1,36 +1,29 @@
 BITS 64
-global asm_strncmp
-
+		section .text
+		global asm_strncmp
 asm_strncmp:
-    push    rbp
-    mov     rbp, rsp
-    push    rcx
-
+        mov rax, 0
+	mov rcx, 0
 loop:
-    movzx   eax, byte [rdi]    ; Load byte from rdi into eax
-    movzx   ecx, byte [rsi]    ; Load byte from rsi into ecx
-    cmp     al, cl             ; Compare the bytes
-    jne     compare            ; If not equal, jump to compare
-    test    al, al             ; Check if the byte is null (end of string)
-    je      success            ; If null, strings are equal up to this point
-    inc     rdi                ; Move to the next character in rdi
-    inc     rsi                ; Move to the next character in rsi
-    dec     edx                ; Decrease string length counter
-    jnz     loop               ; If edx is not zero, continue loop
-
-    ; If we exit the loop and reach here, the strings are equal up to N bytes
-    xor     eax, eax           ; Set eax to 0 to indicate equality
-    jmp     end
-
-compare:
-    sub     eax, ecx           ; Return the difference between the bytes
-    jmp     end
-
-success:
-    xor     eax, eax           ; Set eax to 0 (strings are equal)
-
-end:
-    pop     rcx
-    mov     rsp, rbp
-    pop     rbp
-    ret
+        mov BL, BYTE [rdi + rcx]    ; store first arg char in BL
+        mov BH, BYTE [rsi + rcx]    ; store second arg char in BH
+        cmp BL, BH	; compare them
+        jnz diff	; when not zero return 1 or -1
+        inc rcx		; dec counter
+        cmp rcx, rdx	; when rdx is at zero
+        je out		; return 0
+        jmp loop	; loop again
+diff:
+	sub rdi + rcx, rsi + rcx
+	cmp rdi + rcx, 0
+	jg greater
+	jl less
+        je out
+greater:
+	mov rax, 1
+	jmp out
+less:
+	mov rax, -1
+	jmp out
+out:
+        ret

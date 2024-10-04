@@ -1,45 +1,44 @@
 BITS 64
-	global	asm_strcmp
-
+section .text
+global asm_strcmp
 asm_strcmp:
-	; registers in order rdi, rsi, rdx, rcx, r8, r9
-	push rbp
-	mov rbp, rsp ; setup
-	cmp rdi, 0 ; check if arg1 is NULL
-	je end
-	cmp rsi, 0 ; check if arg2 is NULL
-	je end
-	xor rcx, rcx ; quick trick to init iterator rcx to 0
+        push    rbp
+        mov     rbp, rsp
+
+        cmp     rdi, 0          ; check if rdi is null
+        je      out
+        cmp     rsi, 0          ; check if rsi is null
+        je      out
+
+        xor     rax, rax        ; assume strings are equal (rax = 0)
 
 loop:
-	mov r9b, [rdi + rcx] ; load one char string1
-	mov r8b, [rsi + rcx] ; load one char string2
-	cmp r9b, 0 ; check for end of string 1
-	je compare
-	cmp r8b, 0 ; check for end of string 2
-	je compare
-	cmp r9b, r8b ; compare chars
-	jne compare
-	inc rcx ; increment the iterator
-	jmp loop
+        mov     al, [rdi]       ; load char from rdi
+        mov     cl, [rsi]       ; load char from rsi
+        cmp     al, cl          ; compare the characters
+        jne     not_equal       ; if not equal, go to not_equal
 
-compare:
-	sub r9b, r8b ; r9b -= r8b
-	movsx rax, r9b ; move and get the sign please
-	cmp rax, 0 ; compare to 0 to determine -/+ equal
-	jg greater
-	je end
-	jl less
+        cmp     al, 0           ; check for null terminator
+        je      out             ; if both strings ended, they are equal
+
+        inc     rdi             ; move to next char in rdi
+        inc     rsi             ; move to next char in rsi
+        jmp     loop            ; repeat the loop
+
+not_equal:
+        cmp     al, cl          ; compare characters
+        jg      greater         ; if al > cl, jump to greater
+        jl      less            ; if al < cl, jump to less
 
 greater:
-	mov rax, 1
-	jmp end
+        mov     rax, 1          ; set return value to 1
+        jmp     out
 
 less:
-	mov rax, -1
-	jmp end
+        mov     rax, -1         ; set return value to -1
+        jmp     out
 
-end:
-	mov rsp, rbp
-	pop rbp ; epilogue
-	ret ; pop rip
+out:
+        mov     rsp, rbp
+        pop     rbp
+        ret                     ; return rax

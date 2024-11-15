@@ -4,12 +4,12 @@
 
 void print_python_string(PyObject *p)
 {
-	PyASCIIObject *pao = NULL;
+	/* PyASCIIObject *pao = NULL;*/ 
 
 	setbuf(stdout, NULL);
 	printf("[.] string object info\n");
 
-	if (!po || po->ob_type != &PyUnicode_Type)
+	if (!p || p->ob_type != &PyUnicode_Type)
 	{
 		printf("  [ERROR] Invalid String Object\n");
 		return;

@@ -1,22 +1,42 @@
 #include <Python.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-/**
-* print_python_string - Print information about a Python String object.
-*
-* This function prints information about a Python String object.
-*
-* @p: A pointer to the Python String object.
-*/
-void print_python_string(PyObject *p)
+void print_python_string(PyObject *po)
 {
+    setbuf(stdout, NULL);
     printf("[.] string object info\n");
-    if (PyUnicode_CheckExact(p) == 0)
+
+    // Validate input object
+    if (!po || !PyUnicode_Check(po))
     {
         printf("  [ERROR] Invalid String Object\n");
         return;
     }
-    printf("  type: %s\n",
-        PyUnicode_IS_COMPACT_ASCII(p) ? "compact ascii" : "compact unicode object");
-    printf("  length: %zi\n", PyUnicode_GetLength(p)); // Updated to PyUnicode_GetLength
-    printf("  value: %s\n", PyUnicode_AsUTF8(p));
+
+    // Get string length
+    Py_ssize_t length = PyUnicode_GET_LENGTH(po);
+    printf("  length: %zd\n", length);
+
+    // Determine string type and value
+    if (PyUnicode_IS_COMPACT_ASCII(po))
+    {
+        printf("  type: compact ascii\n");
+        printf("  value: %s\n", PyUnicode_1BYTE_DATA(po));
+    }
+    else
+    {
+        printf("  type: compact unicode object\n");
+
+        // Print the Unicode string as UTF-8
+        const char *utf8_value = PyUnicode_AsUTF8(po);
+        if (utf8_value)
+        {
+            printf("  value: %s\n", utf8_value);
+        }
+        else
+        {
+            printf("  [ERROR] Unable to convert to UTF-8\n");
+        }
+    }
 }

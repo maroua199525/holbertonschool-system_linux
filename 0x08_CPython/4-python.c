@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void print_python_string(PyObject *po)
+void print_python_string(PyObject *p)
 {
 	PyASCIIObject *pao = NULL;
 

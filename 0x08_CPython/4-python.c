@@ -14,17 +14,18 @@ void print_python_string(PyObject *po)
 		printf("  [ERROR] Invalid String Object\n");
 		return;
 	}
+if (PyUnicode_IS_COMPACT_ASCII(p))
+{
+    printf("  type: compact ascii\n");
+}
+else
+{
+    printf("  type: compact unicode object\n");
+}
+    /* Retrieve the length of the string */ 
+printf("  length: %zi\n", PyUnicode_GetLength(p));
 
-	pao = (PyASCIIObject *)po;
-	if (pao->state.ascii)
-	{
-		printf("  type: compact ascii\n");
-		printf("  value: %s\n", PyUnicode_1BYTE_DATA(po));
-	}
-    printf("  length: %lu\n", pao->length);
-	else
-	{
-		printf("  type: compact unicode object\n");
-		printf("  value: %s\n", PyUnicode_AsUTF8(p));
-	}
+    /* Determine the type and value*/
+printf("  value: %s\n", PyUnicode_AsUTF8(p));
+    
 }

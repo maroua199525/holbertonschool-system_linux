@@ -24,7 +24,7 @@ void print_python_int(PyObject *po)
 	is_neg = size < 0;
 	size = is_neg ? -size : size;
 
-	if (size > 3 || (size == 3 && plo->ob_digit[2] < 0xf))
+	if (size > 3 || (size == 3 && plo->ob_digit[2] < 15))
 	{
 		printf("C unsigned long int overflow\n");
 		return;

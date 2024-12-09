@@ -1,4 +1,6 @@
 #include "syscalls.h"
+#include <signal.h>
+
 
 /**
  * trace_child - traces child process

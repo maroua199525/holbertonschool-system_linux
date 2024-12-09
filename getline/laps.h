@@ -1,27 +1,18 @@
-#ifndef RACING_CARS
-#define RACING_CARS
-
-#include <stddef.h>
-#include <stdio.h>
+#ifndef HEADER_FILE
+#define HEADER_FILE
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
 
-/**
- * struct Car - struct to record laps by cars id
- * @id: car identifier
- * @laps: number of laps completed
- * @next: pointer to next car struct
-*/
+/************ MACROS **********/
 
-typedef struct Car
-{
-	int id;
-	int laps;
-	struct Car *next;
-} Car;
+#define SIZE 1024
 
+/********** function *********/
+
+void swap_number(int x, int y);
 void race_state(int *id, size_t size);
-void update_laps(int car_id);
-void create_new_car(int car_id);
-void free_allocated_memory(void);
+void sort_cars(int *cars, int *laps, int n);
 
-#endif /* RACING_CARS */
+#endif

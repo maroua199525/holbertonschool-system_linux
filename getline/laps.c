@@ -1,116 +1,69 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "laps.h"
-
-static Car *cars;
-
 /**
- * race_state - computes and displays the state of the race
- * @id: array of int for `identifiers` of each cars
- * @size: size of id's array
+ * race_state - race
+ * @id: cars
+ * @size: number of cars
+ * Return: void
  */
-	void race_state(int *id, size_t size)
-	{
-	size_t i;
-	Car *current = cars;
+void race_state(int *id, size_t size)
+{
+	static int cars[SIZE];
+	static size_t k;
+	bool result = false;
+	static int laps[SIZE];
+	size_t i = 0, j = 0;
 
-	if (size == 0)
-	{
-		free_allocated_memory();
+	if (!size)
 		return;
-	}
-
 	for (i = 0; i < size; i++)
 	{
-		update_laps(id[i]);
+		for (j = 0; j < k; j++)
+		{
+			if (id[i] == cars[j])
+			{
+				result = true;
+				laps[j] += 1;
+				break;
+			}
+		}
+		if (result == false)
+		{
+			cars[k] = id[i];
+			sort_cars(cars, laps, k);
+			k++;
+			printf("Car %d joined the race\n", id[i]);
+		}
 	}
-
-	/* Print state of race */
 	printf("Race state:\n");
-	current = cars;
-	while (current != NULL)
+	for (j = 0; j < k; j++)
 	{
-		printf("Car %d [%d laps]\n", current->id, current->laps);
-		current = current->next;
-	}
-	}
-
-/**
- * update_laps - updates the laps of a car or creates a new car
- * @car_id: ID of the car to update the laps
- */
-void update_laps(int car_id)
-{
-	Car *current = cars;
-	int found = 0;
-
-	while (current != NULL)
-	{
-		if (current->id == car_id)
-		{
-			current->laps++;
-			found = 1;
-			break;
-		}
-		current = current->next;
-	}
-
-	if (!found)
-	{
-		create_new_car(car_id);
+		printf("Car %d [%d laps]\n", cars[j], laps[j]);
 	}
 }
 
 /**
- * create_new_car - creates a new car and adds it to the race
- * @car_id: ID of the new car
+ * sort_cars - sort cars.
+ * @cars: array of cars
+ * @laps: array of laps
+ * @n: number of cars
+ * Return: Void
  */
-void create_new_car(int car_id)
+void sort_cars(int *cars, int *laps, int n)
 {
-	/* Create a new car if the given id does not exist */
-	Car *new_car = malloc(sizeof(Car));
-		if (new_car == NULL)
+	int aux;
+	int i = n;
+
+	while (i > 0)
+	{
+		if (cars[i] < cars[i - 1])
 		{
-			fprintf(stderr, "Memory allocation error\n");
-			exit(EXIT_FAILURE);
+			aux = cars[i - 1];
+			cars[i - 1] = cars[i];
+			cars[i] = aux;
+			aux = laps[i - 1];
+			laps[i - 1] = laps[i];
+			laps[i] = aux;
 		}
-
-	new_car->id = car_id;
-	new_car->laps = 0;
-
-	if (cars == NULL || car_id < cars->id)
-	{
-		new_car->next = cars;
-		cars = new_car;
-	}
-	else
-	{
-		Car *current = cars;
-
-		while (current->next != NULL && current->next->id <= car_id)
-		{
-			current = current->next;
-		}
-		new_car->next = current->next;
-		current->next = new_car;
-	}
-
-	/* Print new car joins the race */
-	printf("Car %d joined the race\n", car_id);
-}
-
-
-/**
- * free_allocated_memory - frees all allocated memory for cars
- */
-void free_allocated_memory(void)
-{
-	/* Free all allocated memory */
-	while (cars != NULL)
-	{
-		Car *temp = cars;
-
-		cars = cars->next;
-		free(temp);
+		i--;
 	}
 }

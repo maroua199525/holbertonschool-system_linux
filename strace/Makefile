@@ -17,14 +17,14 @@ source_3 = strace_3.c
 object_3 = $(source_3:.c=.o)
 name_3 = strace_3
 
-strace_0: $(object_0)
+strace_0: strace.h $(object_0)
 	$(CC) $(object_0) -o $(name_0)
 
 strace_1: $(object_1) $(object_5)
 	$(CC) $(object_1) -o $(name_1)
 
-strace_2: $(object_2)
+strace_2: strace.h $(object_2)
 	$(CC) $(object_2) -o $(name_2)
 
-strace_3: $(object_3)
+strace_3: strace.h $(object_3)
 	$(CC) $(object_3) -o $(name_3)

@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
-#include "strace.h"
+
 
 /* Normally, MAX_PARAMS is always 6 */
 #define MAX_PARAMS	6
@@ -297,9 +297,7 @@ typedef struct syscall_s
 	type_t const params[MAX_PARAMS];
 } syscall_t;
 
-void trace_child(char **av, char **envp);
-void trace_parent(pid_t child_pid);
-int await_syscall(pid_t child_pid);
+
 void print_arg(type_t type, unsigned long int param);
 int print_execve_line(int argc, char *argv[], char *envp[], pid_t pid);
 void print_args(const syscall_t *sc, struct user_regs_struct *regs, pid_t pid);

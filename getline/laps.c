@@ -10,27 +10,48 @@ static Car *cars;
 void race_state(int *id, size_t size)
 {
     size_t i;
-    Car *current;
+    Car *tmp;
+    int exists;
 
     if (id == NULL || size == 0)
     {
-        freeCars();
-        return;
+        return;  // Do not free memory prematurely here
     }
 
+    for (i = 0; i < size; i++)
+    {
+        tmp = cars;
+        exists = 0;
+
+        /* Check if the car already exists */
+        while (tmp)
+        {
+            if (tmp->id == id[i])
+            {
+                exists = 1;
+                break;
+            }
+            tmp = tmp->next;
+        }
+
+        if (!exists)
+        {
+            if (createCar(id[i]) == 1)
+            {
+                return;  // Do not call freeCars here, just return on failure
+            }
+            printf("Car %d joined the race\n", id[i]);
+        }
+    }
+
+    /* Now update the laps for each car in the race */
     for (i = 0; i < size; i++)
     {
         updateLaps(id[i]);
     }
 
-    /* Print state of the race */
-    printf("Race state:\n");
-    current = cars;
-    while (current != NULL)
-    {
-        printf("Car %d [%d laps]\n", current->id, current->laps);
-        current = current->next;
-    }
+    /* Print the state of the race */
+    printCars();
 }
 
 /**
@@ -45,7 +66,7 @@ int createCar(int id)
 
     new = malloc(sizeof(Car));
     if (new == NULL)
-        return (1);
+        return (1);  // Failure to allocate memory
     new->id = id;
     new->laps = 0;
     new->next = NULL;
@@ -69,9 +90,7 @@ int createCar(int id)
             prev->next = new;
     }
 
-    /* Print new car joins the race */
-    printf("Car %d joined the race\n", id);
-    return (0);
+    return (0);  // Successfully created the car
 }
 
 /**
@@ -96,21 +115,29 @@ void freeCars(void)
 void updateLaps(int id)
 {
     Car *tmp = cars;
-    int found = 0;
 
     while (tmp)
     {
         if (tmp->id == id)
         {
             tmp->laps += 1;
-            found = 1;
             break;
         }
         tmp = tmp->next;
     }
+}
 
-    if (!found)
+/**
+ * printCars - Print all cars.
+ */
+void printCars(void)
+{
+    Car *tmp = cars;
+
+    printf("Race state:\n");
+    while (tmp)
     {
-        createCar(id);
+        printf("Car %d [%d laps]\n", tmp->id, tmp->laps);
+        tmp = tmp->next;
     }
 }

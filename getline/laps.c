@@ -96,11 +96,10 @@ void freeCars(void)
 void updateLaps(int id)
 {
     Car *tmp = cars;
-    int exists;
+    int exists = 0;
 
     while (tmp)
     {
-        exists = 0;
         if (tmp->id == id)
         {
             tmp->laps += 1;

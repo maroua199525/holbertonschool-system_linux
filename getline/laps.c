@@ -100,7 +100,7 @@ void updateLaps(int id)
 
     while (tmp)
     {
-		exists = 0;
+        exists = 0;
         if (tmp->id == id)
         {
             tmp->laps += 1;

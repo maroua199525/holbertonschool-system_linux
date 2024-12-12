@@ -9,46 +9,28 @@ static Car *cars;
  */
 void race_state(int *id, size_t size)
 {
-	size_t i;
-	Car *tmp;
-	int exists;
+    size_t i;
+    Car *current;
 
-	if (id == NULL || size == 0)
-	{
-		freeCars();
-		return;
-	}
+    if (id == NULL || size == 0)
+    {
+        freeCars();
+        return;
+    }
 
-	for (i = 0; i < size; i++)
-	{
-		tmp = cars;
-		exists = 0;
+    for (i = 0; i < size; i++)
+    {
+        updateLaps(id[i]);
+    }
 
-		/* Check if the car already exists */
-		while (tmp != NULL)
-		{
-			if (tmp->id == id[i])
-			{
-				exists = 1;
-				break;
-			}
-			tmp = tmp->next;
-		}
-
-		if (!exists)
-		{
-			if (createCar(id[i]) == 1)
-			{
-				freeCars();
-				return;
-			}
-			printf("Car %d joined the race\n", id[i]);
-		}
-	}
-
-	printCars();
-	for (i = 0; i < size; i++)
-		updateLaps(id[i]);
+    /* Print state of the race */
+    printf("Race state:\n");
+    current = cars;
+    while (current != NULL)
+    {
+        printf("Car %d [%d laps]\n", current->id, current->laps);
+        current = current->next;
+    }
 }
 
 /**
@@ -59,34 +41,37 @@ void race_state(int *id, size_t size)
  */
 int createCar(int id)
 {
-	Car *new, *current, *prev;
+    Car *new, *current, *prev;
 
-	new = malloc(sizeof(Car));
-	if (new == NULL)
-		return (1);
-	new->id = id;
-	new->laps = 0;
-	new->next = NULL;
+    new = malloc(sizeof(Car));
+    if (new == NULL)
+        return (1);
+    new->id = id;
+    new->laps = 0;
+    new->next = NULL;
 
-	if (cars == NULL || cars->id > id)
-	{
-		new->next = cars;
-		cars = new;
-	}
-	else
-	{
-		current = cars;
-		prev = NULL;
-		while (current != NULL && current->id < id)
-		{
-			prev = current;
-			current = current->next;
-		}
-		new->next = current;
-		if (prev != NULL)
-			prev->next = new;
-	}
-	return (0);
+    if (cars == NULL || cars->id > id)
+    {
+        new->next = cars;
+        cars = new;
+    }
+    else
+    {
+        current = cars;
+        prev = NULL;
+        while (current != NULL && current->id < id)
+        {
+            prev = current;
+            current = current->next;
+        }
+        new->next = current;
+        if (prev != NULL)
+            prev->next = new;
+    }
+
+    /* Print new car joins the race */
+    printf("Car %d joined the race\n", id);
+    return (0);
 }
 
 /**
@@ -94,14 +79,14 @@ int createCar(int id)
  */
 void freeCars(void)
 {
-	Car *tmp;
+    Car *tmp;
 
-	while (cars)
-	{
-		tmp = cars;
-		cars = cars->next;
-		free(tmp);
-	}
+    while (cars)
+    {
+        tmp = cars;
+        cars = cars->next;
+        free(tmp);
+    }
 }
 
 /**
@@ -110,30 +95,22 @@ void freeCars(void)
  */
 void updateLaps(int id)
 {
-	Car *tmp = cars;
+    Car *tmp = cars;
+    int found = 0;
 
-	while (tmp != NULL)
-	{
-		if (tmp->id == id)
-		{
-			tmp->laps += 1;
-			break;
-		}
-		tmp = tmp->next;
-	}
-}
+    while (tmp)
+    {
+        if (tmp->id == id)
+        {
+            tmp->laps += 1;
+            found = 1;
+            break;
+        }
+        tmp = tmp->next;
+    }
 
-/**
- * printCars - Print all cars.
- */
-void printCars(void)
-{
-	Car *tmp = cars;
-
-	printf("Race state:\n");
-	while (tmp != NULL)
-	{
-		printf("Car %d [%d laps]\n", tmp->id, tmp->laps);
-		tmp = tmp->next;
-	}
+    if (!found)
+    {
+        createCar(id);
+    }
 }

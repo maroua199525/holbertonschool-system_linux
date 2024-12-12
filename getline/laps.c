@@ -77,7 +77,7 @@ int createCar(int id)
 	{
 		current = cars;
 		prev = NULL;
-		while (current != NULL && current->id < id)
+		while (current != NULL && current->id <= id)
 		{
 			prev = current;
 			current = current->next;

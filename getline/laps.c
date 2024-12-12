@@ -1,69 +1,139 @@
 #include "laps.h"
+
+static Car *cars;
+
 /**
- * race_state - race
- * @id: cars
- * @size: number of cars
- * Return: void
+ * race_state - Keep track of the number of laps made by several cars.
+ * @id: Array of car identifiers.
+ * @size: Size of the id array.
  */
 void race_state(int *id, size_t size)
 {
-	static int cars[SIZE];
-	static size_t k;
-	bool result = false;
-	static int laps[SIZE];
-	size_t i = 0, j = 0;
+	size_t i;
+	Car *tmp;
+	int exists;
 
-	if (!size)
+	if (id == NULL || size == 0)
+	{
+		freeCars();
 		return;
+	}
+
 	for (i = 0; i < size; i++)
 	{
-		for (j = 0; j < k; j++)
+		tmp = cars;
+		exists = 0;
+
+		/* Check if the car already exists */
+		while (tmp)
 		{
-			if (id[i] == cars[j])
+			if (tmp->id == id[i])
 			{
-				result = true;
-				laps[j] += 1;
+				exists = 1;
 				break;
 			}
+			tmp = tmp->next;
 		}
-		if (result == false)
+
+		if (!exists)
 		{
-			cars[k] = id[i];
-			sort_cars(cars, laps, k);
-			k++;
+			if (createCar(id[i]) == 1)
+			{
+				freeCars();
+				return;
+			}
 			printf("Car %d joined the race\n", id[i]);
 		}
 	}
-	printf("Race state:\n");
-	for (j = 0; j < k; j++)
+
+	printCars();
+	for (i = 0; i < size; i++)
+		updateLaps(id[i]);
+}
+
+/**
+ * createCar - Create a new car.
+ * @id: Car identifier.
+ *
+ * Return: 0 on success, 1 on failure.
+ */
+int createCar(int id)
+{
+	Car *new, *current, *prev;
+
+	new = malloc(sizeof(Car));
+	if (new == NULL)
+		return (1);
+	new->id = id;
+	new->laps = 0;
+	new->next = NULL;
+
+	if (cars == NULL || cars->id > id)
 	{
-		printf("Car %d [%d laps]\n", cars[j], laps[j]);
+		new->next = cars;
+		cars = new;
+	}
+	else
+	{
+		current = cars;
+		prev = NULL;
+		while (current != NULL && current->id < id)
+		{
+			prev = current;
+			current = current->next;
+		}
+		new->next = current;
+		if (prev != NULL)
+			prev->next = new;
+	}
+	return (0);
+}
+
+/**
+ * freeCars - Free all cars.
+ */
+void freeCars(void)
+{
+	Car *tmp;
+
+	while (cars)
+	{
+		tmp = cars;
+		cars = cars->next;
+		free(tmp);
 	}
 }
 
 /**
- * sort_cars - sort cars.
- * @cars: array of cars
- * @laps: array of laps
- * @n: number of cars
- * Return: Void
+ * updateLaps - Update the number of laps of a car.
+ * @id: Car identifier.
  */
-void sort_cars(int *cars, int *laps, int n)
+void updateLaps(int id)
 {
-	int aux;
-	int i = n;
+	Car *tmp = cars;
 
-	while (i > 0)
+	while (tmp)
 	{
-		if (cars[i] < cars[i - 1])
+		if (tmp->id == id)
 		{
-			aux = cars[i - 1];
-			cars[i - 1] = cars[i];
-			cars[i] = aux;
-			aux = laps[i - 1];
-			laps[i - 1] = laps[i];
-			laps[i] = aux;
+			tmp->laps += 1;
+			break;
 		}
-		i--;
+		tmp = tmp->next;
+	}
+}
+
+/**
+ * printCars - Print all cars.
+ */
+void printCars(void)
+{
+	Car *tmp = cars;
+
+	printf("Race state:\n");
+	while (tmp)
+	{
+		printf("Car %d [%d laps]\n", tmp->id, tmp->laps);
+		tmp = tmp->next;
 	}
 }

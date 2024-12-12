@@ -1,18 +1,26 @@
-#ifndef HEADER_FILE
-#define HEADER_FILE
-#include <stdlib.h>
-#include <string.h>
+#ifndef LAPS_H
+#define LAPS_H
+
 #include <stdio.h>
-#include <stdbool.h>
+#include <stdlib.h>
 
-/************ MACROS **********/
+/**
+ * struct car - car struct
+ * @id: car id
+ * @laps: number of laps
+ * @next: pointer to next car
+ */
+typedef struct car
+{
+	int id;
+	int laps;
+	struct car *next;
+} Car;
 
-#define SIZE 1024
-
-/********** function *********/
-
-void swap_number(int x, int y);
 void race_state(int *id, size_t size);
-void sort_cars(int *cars, int *laps, int n);
+int createCar(int id);
+void freeCars(void);
+void updateLaps(int id);
+void printCars(void);
 
-#endif
+#endif /* LAPS_H */

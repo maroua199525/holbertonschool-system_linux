@@ -96,7 +96,7 @@ void freeCars(void)
 {
 	Car *tmp;
 
-	while (cars)
+	while (cars != NULL)
 	{
 		tmp = cars;
 		cars = cars->next;

@@ -25,7 +25,7 @@ def read_write_heap(pid, search_string, replace_string):
         replace_string (str): The string to replace with.
 
     Raises:
-        PermissionError: If the script does not have permission to read/write the process memory.
+        PermissionError: If the script does not have permission
         FileNotFoundError: If the process does not exist.
         Exception: For any other exceptions.
     """
@@ -45,7 +45,8 @@ def read_write_heap(pid, search_string, replace_string):
             print("Error: Could not find heap segment")
             sys.exit(1)
 
-        heap_start, heap_end = [int(x, 16) for x in heap_info.split(" ")[0].split("-")]
+        heap_info_parts = heap_info.split(" ")[0].split("-")
+        heap_start, heap_end = [int(x, 16) for x in heap_info_parts]
 
         with open(f"/proc/{pid}/mem", "rb+") as mem_file:
             mem_file.seek(heap_start)
@@ -59,8 +60,6 @@ def read_write_heap(pid, search_string, replace_string):
 
             mem_file.seek(heap_start + index)
             mem_file.write(bytes(replace_string + '\0', "ASCII"))
-
-
     except PermissionError:
         print("Error: Permission denied. Try running as root.")
         sys.exit(1)

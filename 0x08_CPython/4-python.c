@@ -1,29 +1,27 @@
 #include <Python.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void print_python_string(PyObject *po)
 {
-    if (!PyUnicode_Check(po))
-    {
-        fprintf(stderr, "Invalid Unicode object\n");
-        return;
-    }
+	PyASCIIObject *pao = NULL;
 
-    printf("[.] string object info\n");
+	setbuf(stdout, NULL);
+	printf("[.] string object info\n");
 
-    /* Get Unicode kind */
-    Py_ssize_t length = PyUnicode_GET_LENGTH(po);
-    const char *utf8_str = PyUnicode_AsUTF8(po);
+	if (!po || po->ob_type != &PyUnicode_Type)
+	{
+		printf("  [ERROR] Invalid String Object\n");
+		return;
+	}
 
-    /* Print the type */
-    if (PyUnicode_IS_COMPACT_ASCII(po))
-        printf("  type: compact ascii\n");
-    else
-        printf("  type: compact unicode object\n");
+	pao = (PyASCIIObject *)po;
 
-    /* Print the length */
-    printf("  length: %zd\n", length);
+	if (pao->state.ascii)
+		printf("  type: compact ascii\n");
+	else
+		printf("  type: compact unicode object\n");
 
-    /* Print the UTF-8 value */
-    printf("  value: %s\n", utf8_str);
+	printf("  length: %lu\n", pao->length);
+	printf("  value: %s\n", PyUnicode_AsUTF8(po));
 }

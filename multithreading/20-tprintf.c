@@ -2,7 +2,7 @@
 
 
 
-static pthread_mutex_t mutex;
+pthread_mutex_t mutex;
 
 /*
 * An other way of initilizing mutex without function declaration.
